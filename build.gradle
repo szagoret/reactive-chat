@@ -1,9 +1,13 @@
 buildscript {
     ext {
         springBootVersion = '2.0.1.RELEASE'
+        springCloudVersion = 'Finchley.M9'
+        springCloudStreamVersion = 'Elmhurst.RC3'
     }
     repositories {
         mavenCentral()
+        maven { url "https://repo.spring.io/snapshot" }
+        maven { url "https://repo.spring.io/milestone" }
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -21,13 +25,10 @@ sourceCompatibility = 1.8
 
 repositories {
     mavenCentral()
+    maven { url "https://repo.spring.io/snapshot" }
     maven { url "https://repo.spring.io/milestone" }
-}
-
-
-ext {
-    springCloudVersion = 'Finchley.M9'
-    springCloudStreamVersion = 'Elmhurst.RC3'
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url "https://dl.bintray.com/rabbitmq/maven-milestones/" }
 }
 
 dependencies {
@@ -36,10 +37,17 @@ dependencies {
     compile('org.springframework.cloud:spring-cloud-starter-stream-rabbit')
     compile('org.springframework.cloud:spring-cloud-stream-reactive')
     compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client')
+    compile('org.springframework.cloud:spring-cloud-starter-netflix-hystrix')
     compile('org.springframework.cloud:spring-cloud-starter-config')
     compileOnly('org.projectlombok:lombok')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }
+
+configurations {
+    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    all*.exclude group: 'org.springframework', module: 'spring-webmvc'
+}
+
 
 dependencyManagement {
     imports {
