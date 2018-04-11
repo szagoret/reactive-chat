@@ -21,7 +21,7 @@ public class WebSocketConfig {
 
         Map<String, CorsConfiguration> corsConfigurationMap = new HashMap<>();
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("http://localhost:8080");
+        corsConfiguration.addAllowedOrigin("http://localhost:8000");
         corsConfigurationMap.put("/topic/comments.new", corsConfiguration);
 
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();

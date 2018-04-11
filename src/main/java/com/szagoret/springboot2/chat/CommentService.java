@@ -32,6 +32,8 @@ public class CommentService implements WebSocketHandler {
                 FluxSink.OverflowStrategy.IGNORE)
                 .publish()
                 .autoConnect();
+
+//        flux.subscribe();
     }
 
     @StreamListener(Sink.INPUT)
