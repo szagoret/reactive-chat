@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Learning Spring Boot: Spring-a-Gram</title>
+    <link rel="stylesheet" href="/main.css"/>
+</head>
+<body>
+<div>
+    <span th:text="${authentication.name}"/>
+    <span th:text="${authentication.authorities}"/>
+</div>
+<hr/>
+
+<h1>Learning Spring Boot - 2nd Edition</h1>
+
+<div id="images"></div>
+
+<div id="chatBox">
+    Greetings!
+    <br/>
+    <textarea id="chatDisplay" rows="10" cols="80" disabled="true"></textarea>
+    <br/>
+    <input id="chatInput" type="text" style="width: 500px" value=""/>
+    <br/>
+    <button id="chatButton">Send</button>
+    <br/>
+</div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    (function () {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', /*[[@{'/imagesService'}]]*/'', true);
+        xhr.onload = function (e) {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    document.getElementById('images').innerHTML = xhr.responseText;
+
+                    // Register a handler for each button
+                    document.querySelectorAll('button.comment')
+                        .forEach(function (button) {
+                            button.addEventListener('click',
+                                function () {
+                                    e.preventDefault();
+                                    var comment = document.getElementById('comment-' + button.id);
+
+                                    var xhr = new XMLHttpRequest();
+                                    xhr.open('POST', /*[[@{'/comments'}]]*/'', true);
+
+                                    var formData = new FormData();
+                                    formData.append('comment', comment.value);
+                                    formData.append('imageId', button.id);
+
+                                    xhr.send(formData);
+
+                                    comment.value = '';
+                                });
+                        });
+
+                    document.querySelectorAll('button.delete')
+                        .forEach(function (button) {
+                            button.addEventListener('click',
+                                function () {
+                                    e.preventDefault();
+                                    var xhr = new XMLHttpRequest();
+                                    xhr.open('DELETE', button.id, true);
+                                    xhr.withCredentials = true;
+                                    xhr.send(null);
+                                });
+                        });
+
+                    document.getElementById('upload')
+                        .addEventListener('click', function () {
+                            e.preventDefault();
+                            var xhr = new XMLHttpRequest();
+                            xhr.open('POST', /*[[@{'/images'}]]*/'', true);
+
+                            var files = document.getElementById('file').files;
+
+                            var formData = new FormData();
+                            formData.append('file', files[0], files[0].name);
+
+                            xhr.send(formData);
+                        })
+                }
+            }
+        };
+        xhr.send(null);
+    })();
+    /*]]>*/
+</script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    (function () {
+        // Register a handler for each button to make an AJAX call
+        document.querySelectorAll('button.comment').forEach(function (button) {
+            button.addEventListener('click', function () {
+                var comment = document.getElementById('comment-' + button.id);
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', /*[[@{'/comments'}]]*/'', true);
+                var formData = new FormData();
+                formData.append('comment', comment.value);
+                formData.append('imageId', button.id);
+                xhr.send(formData);
+                comment.value = '';
+            });
+        });
+        var newComments = null;
+        var outboundChatMessages = null;
+        var inboundChatMessages = null;
+        // tag::connect[]
+        document.getElementById('connect').addEventListener('click', function () {
+            document.getElementById('connect').style.display = 'none';
+            document.getElementById('disconnect').style.display = 'inline';
+            let usernameInput = document.getElementById('username');
+            document.getElementById('chatBox').style.display = 'inline';
+            // end::connect[]
+            // Listen for new comments
+            newComments = new WebSocket('ws://localhost:8200/topic/comments.new?user=' + usernameInput.value);
+            newComments.onmessage = function (event) {
+                console.log('Received ' + event.data + '!');
+                let parsedMessage = JSON.parse(event.data);
+                let ul = document.getElementById('comments-' + parsedMessage.imageId);
+                let li = document.createElement('li');
+                li.appendChild(document.createTextNode(parsedMessage.comment));
+                ul.appendChild(li);
+            };
+            outboundChatMessages = new WebSocket('ws://localhost:8200/app/chatMessage.new?user=' + usernameInput.value);
+            // Post new chat messages
+            outboundChatMessages.onopen = function (event) {
+                document.getElementById('chatButton').addEventListener('click', function () {
+                    let chatInput = document.getElementById('chatInput');
+                    console.log('Publishing "' + chatInput.value + '"');
+                    outboundChatMessages.send(chatInput.value);
+                    chatInput.value = '';
+                    chatInput.focus();
+                });
+            };
+            // tag::chat[]
+            inboundChatMessages = new WebSocket('ws://localhost:8200/topic/chatMessage.new?user=' + usernameInput.value);
+            inboundChatMessages.onmessage = function (event) {
+                console.log('Received ' + event.data);
+                let chatDisplay = document.getElementById('chatDisplay');
+                chatDisplay.value = chatDisplay.value + event.data + '\n';
+            };
+            // end::chat[]
+            // usernameInput.value = '';
+            usernameInput.disabled = true;
+            document.getElementById('chatInput').focus();
+        });
+        // tag::disconnect[]
+        document.getElementById('disconnect').addEventListener('click', function () {
+            let usernameInput = document.getElementById('username');
+            usernameInput.disabled = false;
+            usernameInput.value = '';
+
+            document.getElementById('connect').style.display = 'inline';
+            document.getElementById('disconnect').style.display = 'none';
+            document.getElementById('chatBox').style.display = 'none';
+            if (newComments != null) {
+                newComments.close();
+            }
+            if (outboundChatMessages != null) {
+                outboundChatMessages.close();
+            }
+            if (inboundChatMessages != null) {
+                inboundChatMessages.close();
+            }
+        });
+        // end::disconnect[]
+    })();
+    /*]]>*/
+</script>
+<!-- end::javascript[] -->
+</body>
+</html>
