@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.StreamListener;
-import org.springframework.cloud.stream.messaging.Sink;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketSession;
@@ -15,7 +14,7 @@ import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 @Service
-@EnableBinding(Sink.class)
+@EnableBinding(ChatServiceStreams.class)
 public class CommentService implements WebSocketHandler {
 
     private final static Logger log = LoggerFactory.getLogger(CommentService.class);
@@ -35,7 +34,7 @@ public class CommentService implements WebSocketHandler {
 //        flux.subscribe();
     }
 
-    @StreamListener(Sink.INPUT)
+    @StreamListener(ChatServiceStreams.NEW_COMMENTS)
     public void broadcast(Comment comment) {
         if (webSocketCommentSink != null) {
             log.info("Publishing " + comment.toString() + " to websocket...");
