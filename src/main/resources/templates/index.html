@@ -47,7 +47,7 @@
             </form>
         </div>
     </nav>
-
+<div id="images"></div>
 <div id="chatBox">
     Greetings!
     <br/>
@@ -68,13 +68,12 @@
         xhr.onload = function (e) {
             if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
-                    // document.getElementById('images').innerHTML = xhr.responseText;
+                    document.getElementById('images').innerHTML = xhr.responseText;
 
                     // Register a handler for each button
                     document.querySelectorAll('button.comment')
                         .forEach(function (button) {
-                            button.addEventListener('click',
-                                function () {
+                            button.addEventListener('click', function () {
                                     e.preventDefault();
                                     var comment = document.getElementById('comment-' + button.id);
 
