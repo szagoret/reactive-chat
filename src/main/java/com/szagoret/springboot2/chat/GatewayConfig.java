@@ -15,14 +15,14 @@ public class GatewayConfig {
     private static final Logger log = LoggerFactory.getLogger(GatewayConfig.class);
 
     @Bean
-    SaveSessionGatewayFilterFactory saveSessionGatewayFilterFactory(){
+    SaveSessionGatewayFilterFactory saveSessionGatewayFilterFactory() {
         return new SaveSessionGatewayFilterFactory();
     }
 
     /**
      * Force the current WebSession to get saved
      */
-    static class SaveSessionGatewayFilterFactory implements GatewayFilterFactory{
+    static class SaveSessionGatewayFilterFactory implements GatewayFilterFactory {
         @Override
         public GatewayFilter apply(Tuple args) {
             return (exchange, chain) -> exchange.getSession()
